@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF--ar">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador de Reservas</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -44,12 +44,12 @@
         <div class="mb-6 flex items-center justify-between"><h2 class="text-2xl font-bold text-gray-700">Lista de Reservas</h2><div class="relative"><i class="ph ph-funnel absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i><select id="filter-status" class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"><option value="todos">Todos os Status</option><option value="Pendente">Pendente</option><option value="Confirmado">Confirmado</option><option value="Pronto">Pronto</option><option value="Entregue">Entregue</option><option value="Cancelado">Cancelado</option></select></div></div>
 
         <div id="reservations-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="col-span-full text-center py-16"><i class="ph ph-spinner text-5xl text-orange-500 animate-spin"></i><p class="mt-4 text-lg text-gray-500">Carregando reservas...</p></div>
+            <div class="col-span-full text-center py-16"><i class="ph ph-spinner text-5xl text-orange-500 animate-spin"></i><p class="mt-4 text-lg text-gray-500">A carregar reservas...</p></div>
         </div>
     </div>
     
-    <div id="stock-modal-container" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"><div class="modal bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md modal-enter"><h2 class="text-2xl font-bold text-gray-800 mb-6">Definir Limites Diários</h2><form id="stock-form" class="space-y-4"><div><label for="limit_chicken" class="block text-sm font-medium text-gray-700">Limite de Frangos Assados</label><input type="number" name="limit_chicken" id="limit_chicken" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"></div><div><label for="limit_skewer" class="block text-sm font-medium text-gray-700">Limite de Espetinhos</label><input type="number" name="limit_skewer" id="limit_skewer" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"></div><div class="flex items-center justify-end gap-4 pt-4"><button type="button" class="btn-cancel text-gray-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100">Cancelar</button><button type="submit" class="bg-blue-500 text-white font-bold px-6 py-2 rounded-lg hover:bg-blue-600">Salvar Limites</button></div></form></div></div>
-    <div id="sale-modal-container" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"><div class="modal bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md modal-enter"><h2 class="text-2xl font-bold text-gray-800 mb-6">Registrar Venda Presencial</h2><form id="sale-form" class="space-y-4"><div><label for="sale_chicken" class="block text-sm font-medium text-gray-700">Quantidade de Frangos</label><input type="number" name="sale_chicken" id="sale_chicken" value="0" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"></div><div><label for="sale_skewer" class="block text-sm font-medium text-gray-700">Quantidade de Espetinhos</label><input type="number" name="sale_skewer" id="sale_skewer" value="0" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"></div><div class="flex items-center justify-end gap-4 pt-4"><button type="button" class="btn-cancel text-gray-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100">Cancelar</button><button type="submit" class="bg-green-500 text-white font-bold px-6 py-2 rounded-lg hover:bg-green-600">Registrar Venda</button></div></form></div></div>
+    <div id="stock-modal-container" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"><div class="modal bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md modal-enter"><h2 class="text-2xl font-bold text-gray-800 mb-6">Definir Limites Diários</h2><form id="stock-form" class="space-y-4"><div><label for="limit_chicken" class="block text-sm font-medium text-gray-700">Limite de Frangos Assados</label><input type="number" name="limit_chicken" id="limit_chicken" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"></div><div><label for="limit_skewer" class="block text-sm font-medium text-gray-700">Limite de Espetinhos</label><input type="number" name="limit_skewer" id="limit_skewer" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"></div><div class="flex items-center justify-end gap-4 pt-4"><button type="button" class="btn-cancel text-gray-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100">Cancelar</button><button type="submit" class="bg-blue-500 text-white font-bold px-6 py-2 rounded-lg hover:bg-blue-600">Guardar Limites</button></div></form></div></div>
+    <div id="sale-modal-container" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"><div class="modal bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md modal-enter"><h2 class="text-2xl font-bold text-gray-800 mb-6">Registar Venda Presencial</h2><form id="sale-form" class="space-y-4"><div><label for="sale_chicken" class="block text-sm font-medium text-gray-700">Quantidade de Frangos</label><input type="number" name="sale_chicken" id="sale_chicken" value="0" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"></div><div><label for="sale_skewer" class="block text-sm font-medium text-gray-700">Quantidade de Espetinhos</label><input type="number" name="sale_skewer" id="sale_skewer" value="0" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"></div><div class="flex items-center justify-end gap-4 pt-4"><button type="button" class="btn-cancel text-gray-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100">Cancelar</button><button type="submit" class="bg-green-500 text-white font-bold px-6 py-2 rounded-lg hover:bg-green-600">Registar Venda</button></div></form></div></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -79,20 +79,20 @@
         const filterStatus = document.getElementById('filter-status');
 
         signInAnonymously(auth).catch(error => console.error("Authentication Error:", error));
-        onAuthStateChanged(auth, user => { if (user) { listenForStock(); listenForReservations(); }});
+        onAuthStateChanged(auth, user => { if (user) { listenToChanges(); }});
 
-        function listenForStock() {
+        function listenToChanges() {
+            // Listener para o stock (limites)
             onSnapshot(stockDocRef, (doc) => {
                 const data = doc.exists() ? doc.data() : { chicken_limit: 0, skewer_limit: 0 };
                 stockData.chicken_limit = data.chicken_limit || 0;
                 stockData.skewer_limit = data.skewer_limit || 0;
                 document.getElementById('limit_chicken').value = stockData.chicken_limit;
                 document.getElementById('limit_skewer').value = stockData.skewer_limit;
-                updateDashboard();
+                updateDashboardUI();
             });
-        }
-        
-        function listenForReservations() {
+
+            // Listener para as reservas (calcula o total reservado)
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const q = query(collection(db, "reservas"), orderBy("createdAt", "desc"));
@@ -100,12 +100,22 @@
                 allReservations = snapshot.docs
                     .map(doc => ({ id: doc.id, ...doc.data() }))
                     .filter(res => res.createdAt && res.createdAt.toDate() >= today); 
+                
+                const reservedChicken = allReservations.filter(r => r.status !== 'Cancelado').reduce((sum, r) => sum + (r.quantity_chicken || 0), 0);
+                const reservedSkewer = allReservations.filter(r => r.status !== 'Cancelado').reduce((sum, r) => sum + (r.quantity_skewer || 0), 0);
+                
+                // Atualiza o documento de stock na nuvem com a contagem de reservados
+                setDoc(stockDocRef, { 
+                    chicken_reserved: reservedChicken, 
+                    skewer_reserved: reservedSkewer 
+                }, { merge: true });
+
                 renderReservations();
-                updateDashboard();
+                updateDashboardUI();
             });
         }
 
-        function updateDashboard() {
+        function updateDashboardUI() {
             const reservedChicken = allReservations.filter(r => r.status !== 'Cancelado').reduce((sum, r) => sum + (r.quantity_chicken || 0), 0);
             const reservedSkewer = allReservations.filter(r => r.status !== 'Cancelado').reduce((sum, r) => sum + (r.quantity_skewer || 0), 0);
             
@@ -147,12 +157,12 @@
             e.preventDefault();
             const newChickenLimit = parseInt(e.target.limit_chicken.value);
             const newSkewerLimit = parseInt(e.target.limit_skewer.value);
-            
             stockModal.classList.add('hidden');
             
-            stockData.chicken_limit = newChickenLimit;
-            stockData.skewer_limit = newSkewerLimit;
-            updateDashboard();
+            await setDoc(stockDocRef, {
+                chicken_limit: newChickenLimit,
+                skewer_limit: newSkewerLimit
+            }, { merge: true });
 
             document.getElementById('chicken-stock-card').classList.add('flash-bg');
             document.getElementById('skewer-stock-card').classList.add('flash-bg');
@@ -160,11 +170,6 @@
                 document.getElementById('chicken-stock-card').classList.remove('flash-bg');
                 document.getElementById('skewer-stock-card').classList.remove('flash-bg');
             }, 1000);
-
-            await setDoc(stockDocRef, {
-                chicken_limit: newChickenLimit,
-                skewer_limit: newSkewerLimit
-            }, { merge: true });
         });
         
         document.getElementById('sale-form').addEventListener('submit', async (e) => {
@@ -172,27 +177,17 @@
             const chickenQty = parseInt(e.target.sale_chicken.value);
             const skewerQty = parseInt(e.target.sale_skewer.value);
             if (chickenQty === 0 && skewerQty === 0) return;
-            
             saleModal.classList.add('hidden');
-            
             try {
                 await addDoc(collection(db, "reservas"), {
                     name: 'Venda Presencial', phone: '', time: '', quantity_chicken: chickenQty, quantity_skewer: skewerQty, status: 'Entregue', createdAt: serverTimestamp()
                 });
-
-                document.getElementById('chicken-stock-card').classList.add('flash-bg');
-                document.getElementById('skewer-stock-card').classList.add('flash-bg');
-                setTimeout(() => {
-                    document.getElementById('chicken-stock-card').classList.remove('flash-bg');
-                    document.getElementById('skewer-stock-card').classList.remove('flash-bg');
-                }, 1000);
             } catch (error) { 
-                console.error("Erro ao registrar venda:", error); 
-                alert("Ocorreu um erro ao registrar a venda. Tente novamente.");
+                console.error("Erro ao registar venda:", error); 
+                alert("Ocorreu um erro ao registar a venda. Tente novamente.");
             }
         });
     </script>
 </body>
 </html>
-
 
