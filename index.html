@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Reservas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-enter { animation: modalEnter 0.3s ease-out; }
+        @keyframes modalEnter { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .progress-bar { transition: width 0.5s ease-in-out; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="app" class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+        <header class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800 flex items-center gap-3"><i class="ph-bold ph-list-checks text-orange-500"></i>Reservas</h1>
+                <p class="text-lg text-gray-500 mt-1">Frango Assado & Espetinhos</p>
+            </div>
+            <div class="flex items-center gap-4 flex-wrap">
+                 <button id="add-sale-btn" class="bg-green-500 text-white font-bold py-2 px-5 rounded-lg shadow-md hover:bg-green-600 flex items-center justify-center gap-2 transition-transform hover:scale-105"><i class="ph ph-plus-circle text-xl"></i>Venda Presencial</button>
+                 <button id="stock-control-btn" class="bg-blue-500 text-white font-bold py-2 px-5 rounded-lg shadow-md hover:bg-blue-600 flex items-center justify-center gap-2 transition-transform hover:scale-105"><i class="ph ph-sliders-horizontal text-xl"></i>Controle de Estoque</button>
+            </div>
+        </header>
+
+        <!-- Painel de Resumo do Estoque -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                <div class="flex justify-between items-center"><h2 class="text-sm font-medium text-gray-500 mb-2">Estoque de Frango Assado</h2><i class="ph ph-meat text-2xl text-orange-400"></i></div>
+                <p id="chicken-stock-status" class="text-4xl font-bold text-gray-800">0 / 0</p>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2"><div id="chicken-progress" class="bg-orange-400 h-2.5 rounded-full progress-bar" style="width: 0%"></div></div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                <div class="flex justify-between items-center"><h2 class="text-sm font-medium text-gray-500 mb-2">Estoque de Espetinhos</h2><i class="ph ph-fire text-2xl text-red-500"></i></div>
+                <p id="skewer-stock-status" class="text-4xl font-bold text-gray-800">0 / 0</p>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2"><div id="skewer-progress" class="bg-red-500 h-2.5 rounded-full progress-bar" style="width: 0%"></div></div>
+            </div>
+        </div>
+
+        <div class="mb-6 flex items-center justify-between"><h2 class="text-2xl font-bold text-gray-700">Lista de Reservas</h2><div class="relative"><i class="ph ph-funnel absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i><select id="filter-status" class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition"><option value="todos">Todos os Status</option><option value="Pendente">Pendente</option><option value="Confirmado">Confirmado</option><option value="Pronto">Pronto</option><option value="Entregue">Entregue</option><option value="Cancelado">Cancelado</option></select></div></div>
+
+        <div id="reservations-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="col-span-full text-center py-16"><i class="ph ph-spinner text-5xl text-orange-500 animate-spin"></i><p class="mt-4 text-lg text-gray-500">Carregando reservas...</p></div>
+        </div>
+    </div>
+    
+    <!-- Modal de Controle de Estoque -->
+    <div id="stock-modal-container" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="modal bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md modal-enter">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Definir Limites Diários</h2>
+            <form id="stock-form" class="space-y-4">
+                <div><label for="limit_chicken" class="block text-sm font-medium text-gray-700">Limite de Frangos Assados</label><input type="number" name="limit_chicken" id="limit_chicken" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                <div><label for="limit_skewer" class="block text-sm font-medium text-gray-700">Limite de Espetinhos</label><input type="number" name="limit_skewer" id="limit_skewer" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                <div class="flex items-center justify-end gap-4 pt-4"><button type="button" class="btn-cancel text-gray-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100">Cancelar</button><button type="submit" class="bg-blue-500 text-white font-bold px-6 py-2 rounded-lg hover:bg-blue-600">Salvar Limites</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Venda Presencial -->
+    <div id="sale-modal-container" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="modal bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md modal-enter">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Registrar Venda Presencial</h2>
+            <form id="sale-form" class="space-y-4">
+                <div><label for="sale_chicken" class="block text-sm font-medium text-gray-700">Quantidade de Frangos</label><input type="number" name="sale_chicken" id="sale_chicken" value="0" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                <div><label for="sale_skewer" class="block text-sm font-medium text-gray-700">Quantidade de Espetinhos</label><input type="number" name="sale_skewer" id="sale_skewer" value="0" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                <div class="flex items-center justify-end gap-4 pt-4"><button type="button" class="btn-cancel text-gray-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100">Cancelar</button><button type="submit" class="bg-green-500 text-white font-bold px-6 py-2 rounded-lg hover:bg-green-600">Registrar Venda</button></div>
+            </form>
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, addDoc, serverTimestamp, query, orderBy, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD3WC1CFgsH9dLLI6sEeBpyH9fQ2xhVKuA",
+            authDomain: "reservas-espetinhos-mercado.firebaseapp.com",
+            projectId: "reservas-espetinhos-mercado",
+            storageBucket: "reservas-espetinhos-mercado.appspot.com",
+            messagingSenderId: "296333721802",
+            appId: "1:296333721802:web:5567a01c3eec4a4fe27433"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        const getTodayId = () => { const today = new Date(); return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`; };
+        const todayId = getTodayId();
+        const stockDocRef = doc(db, "daily_stock", todayId);
+
+        let allReservations = [];
+        const reservationsContainer = document.getElementById('reservations-container');
+        const filterStatus = document.getElementById('filter-status');
+
+        signInAnonymously(auth).catch(error => console.error("Authentication Error:", error));
+        onAuthStateChanged(auth, user => { if (user) { listenForReservations(); listenForStock(); }});
+
+        function listenForStock() {
+            onSnapshot(stockDocRef, (doc) => {
+                const stockData = doc.exists() ? doc.data() : { chicken_limit: 0, skewer_limit: 0 };
+                document.getElementById('limit_chicken').value = stockData.chicken_limit;
+                document.getElementById('limit_skewer').value = stockData.skewer_limit;
+                updateDashboard(stockData);
+            });
+        }
+        
+        function listenForReservations() {
+            const q = query(collection(db, "reservas"), orderBy("createdAt", "desc"));
+            onSnapshot(q, (snapshot) => {
+                allReservations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderReservations();
+            });
+        }
+
+        const updateDashboard = (stockData) => {
+            const reservedChicken = allReservations.filter(r => r.status !== 'Cancelado').reduce((sum, r) => sum + (r.quantity_chicken || 0), 0);
+            const reservedSkewer = allReservations.filter(r => r.status !== 'Cancelado').reduce((sum, r) => sum + (r.quantity_skewer || 0), 0);
+
+            const chickenLimit = stockData.chicken_limit || 0;
+            const skewerLimit = stockData.skewer_limit || 0;
+
+            document.getElementById('chicken-stock-status').textContent = `${reservedChicken} / ${chickenLimit}`;
+            document.getElementById('skewer-stock-status').textContent = `${reservedSkewer} / ${skewerLimit}`;
+            
+            const chickenProgress = chickenLimit > 0 ? (reservedChicken / chickenLimit) * 100 : 0;
+            const skewerProgress = skewerLimit > 0 ? (reservedSkewer / skewerLimit) * 100 : 0;
+
+            document.getElementById('chicken-progress').style.width = `${Math.min(chickenProgress, 100)}%`;
+            document.getElementById('skewer-progress').style.width = `${Math.min(skewerProgress, 100)}%`;
+        };
+        
+        const renderReservations = () => { /* ... (código de renderização inalterado) ... */ 
+            reservationsContainer.innerHTML = '';
+            const statusConfig={'Pendente':{bgColor:'bg-orange-100',textColor:'text-orange-800',icon:'ph-timer',actions:['Confirmado','Pronto','Cancelado']},'Confirmado':{bgColor:'bg-blue-100',textColor:'text-blue-800',icon:'ph-check-circle',actions:['Pronto','Entregue','Cancelado']},'Pronto':{bgColor:'bg-green-100',textColor:'text-green-800',icon:'ph-basket',actions:['Entregue','Cancelado']},'Entregue':{bgColor:'bg-gray-200',textColor:'text-gray-700',icon:'ph-check-fat',actions:[]},'Cancelado':{bgColor:'bg-red-100',textColor:'text-red-800',icon:'ph-x-circle',actions:[]}};
+            const currentFilter=filterStatus.value;
+            const sorted=[...allReservations].sort((a,b)=>{const statusOrder={'Pendente':1,'Confirmado':2,'Pronto':3,'Entregue':4,'Cancelado':5};return statusOrder[a.status]-statusOrder[b.status]||(a.time&&b.time?a.time.localeCompare(b.time):0)});
+            const filtered=sorted.filter(res=>currentFilter==='todos'||res.status===currentFilter);
+            if(filtered.length===0){reservationsContainer.innerHTML=`<div class="col-span-full text-center py-16 bg-white rounded-2xl border border-dashed"><i class="ph-bold ph-folder-simple-dashed text-6xl text-gray-300"></i><p class="mt-4 text-xl text-gray-500">Nenhuma reserva encontrada.</p></div>`}
+            else{filtered.forEach(res=>{const config=statusConfig[res.status];const card=document.createElement('div');card.className='card bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-between gap-4 fade-in';const actionsHtml=config.actions.length>0?`<div class="relative"><select onchange="window.updateStatus('${res.id}', this.value)" class="w-full text-center px-4 py-2 text-sm font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition"><option value="" disabled selected>Alterar Status...</option>${config.actions.map(action=>`<option value="${action}">${action}</option>`).join('')}</select></div>`:'<p class="text-sm text-center text-gray-500 font-medium">Reserva finalizada.</p>';let itemsHtml='';if(res.quantity_chicken>0){itemsHtml+=`<div class="flex items-center gap-3"><i class="ph ph-meat text-lg text-orange-500"></i><span class="font-semibold">${res.quantity_chicken} Frango(s)</span></div>`}
+            if(res.quantity_skewer>0){itemsHtml+=`<div class="flex items-center gap-3"><i class="ph ph-fire text-lg text-red-500"></i><span class="font-semibold">${res.quantity_skewer} Espetinho(s)</span></div>`}
+            card.innerHTML=`<div><div class="flex justify-between items-start mb-4"><h3 class="text-xl font-bold text-gray-800">${res.name}</h3><div class="status-badge ${config.bgColor} ${config.textColor} text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5"><i class="ph-fill ${config.icon}"></i><span>${res.status}</span></div></div><div class="space-y-3 text-gray-600">${itemsHtml}${res.time?`<div class="flex items-center gap-3"><i class="ph ph-clock text-lg text-orange-500"></i><span>Retirada às <strong>${res.time}</strong></span></div>`:''}${res.phone?`<div class="flex items-center gap-3"><i class="ph ph-phone text-lg text-orange-500"></i><a href="https://wa.me/55${res.phone}" target="_blank" class="hover:text-orange-600 hover:underline transition">${res.phone}</a></div>`:''}</div></div><div class="mt-4 pt-4 border-t border-gray-200">${actionsHtml}</div>`;reservationsContainer.appendChild(card)})};
+            listenForStock();
+        };
+        
+        window.updateStatus = async (id, newStatus) => { await updateDoc(doc(db, "reservas", id), { status: newStatus }); };
+        filterStatus.addEventListener('change', renderReservations);
+
+        // Lógica dos Modais
+        const stockModal = document.getElementById('stock-modal-container');
+        const saleModal = document.getElementById('sale-modal-container');
+        
+        document.getElementById('stock-control-btn').addEventListener('click', () => stockModal.classList.remove('hidden'));
+        document.getElementById('add-sale-btn').addEventListener('click', () => {
+            document.getElementById('sale-form').reset();
+            saleModal.classList.remove('hidden');
+        });
+        
+        document.querySelectorAll('.btn-cancel').forEach(btn => btn.addEventListener('click', () => {
+            stockModal.classList.add('hidden');
+            saleModal.classList.add('hidden');
+        }));
+
+        document.getElementById('stock-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await setDoc(stockDocRef, {
+                chicken_limit: parseInt(e.target.limit_chicken.value),
+                skewer_limit: parseInt(e.target.limit_skewer.value)
+            }, { merge: true });
+            stockModal.classList.add('hidden');
+        });
+        
+        document.getElementById('sale-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const chickenQty = parseInt(e.target.sale_chicken.value);
+            const skewerQty = parseInt(e.target.sale_skewer.value);
+            
+            if (chickenQty === 0 && skewerQty === 0) return;
+
+            try {
+                // Adiciona a reserva como "Entregue"
+                await addDoc(collection(db, "reservas"), {
+                    name: 'Venda Presencial',
+                    phone: '',
+                    time: '',
+                    quantity_chicken: chickenQty,
+                    quantity_skewer: skewerQty,
+                    status: 'Entregue',
+                    createdAt: serverTimestamp()
+                });
+
+                // Atualiza o estoque (incrementando os reservados)
+                // Usando set com merge para criar o doc se ele não existir
+                await setDoc(stockDocRef, {
+                    chicken_reserved: increment(chickenQty),
+                    skewer_reserved: increment(skewerQty)
+                }, { merge: true });
+
+                saleModal.classList.add('hidden');
+            } catch (error) {
+                console.error("Erro ao registrar venda:", error);
+                alert("Ocorreu um erro. Tente novamente.");
+            }
+        });
+    </script>
+</body>
+</html>
+
