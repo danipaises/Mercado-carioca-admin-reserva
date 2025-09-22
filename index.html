@@ -83,8 +83,9 @@
 
         function listenForStock() {
             onSnapshot(stockDocRef, (doc) => {
-                const data = doc.exists() ? doc.data() : { chicken_limit: 0, skewer_limit: 0, chicken_reserved: 0, skewer_reserved: 0 };
-                stockData = {...stockData, ...data};
+                const data = doc.exists() ? doc.data() : { chicken_limit: 0, skewer_limit: 0 };
+                stockData.chicken_limit = data.chicken_limit || 0;
+                stockData.skewer_limit = data.skewer_limit || 0;
                 document.getElementById('limit_chicken').value = stockData.chicken_limit;
                 document.getElementById('limit_skewer').value = stockData.skewer_limit;
                 updateDashboard();
@@ -119,15 +120,13 @@
 
             document.getElementById('chicken-progress').style.width = `${Math.min(chickenProgress, 100)}%`;
             document.getElementById('skewer-progress').style.width = `${Math.min(skewerProgress, 100)}%`;
-            
-            setDoc(stockDocRef, { chicken_reserved: reservedChicken, skewer_reserved: reservedSkewer }, { merge: true });
         };
         
-        const renderReservations = () => { /* ... (código de renderização inalterado) ... */
+        const renderReservations = () => {
              reservationsContainer.innerHTML = '';
             const statusConfig={'Pendente':{bgColor:'bg-orange-100',textColor:'text-orange-800',icon:'ph-timer',actions:['Confirmado','Pronto','Cancelado']},'Confirmado':{bgColor:'bg-blue-100',textColor:'text-blue-800',icon:'ph-check-circle',actions:['Pronto','Entregue','Cancelado']},'Pronto':{bgColor:'bg-green-100',textColor:'text-green-800',icon:'ph-basket',actions:['Entregue','Cancelado']},'Entregue':{bgColor:'bg-gray-200',textColor:'text-gray-700',icon:'ph-check-fat',actions:[]},'Cancelado':{bgColor:'bg-red-100',textColor:'text-red-800',icon:'ph-x-circle',actions:[]}};
             const currentFilter=filterStatus.value;
-            const sorted=[...allReservations].sort((a,b)=>{const statusOrder={'Pendente':1,'Confirmado':2,'Pronto':3,'Entregue':4,'Cancelado':5};return statusOrder[a.status]-statusOrder[b.status]||(a.time&&b.time?a.time.localeCompare(b.time):0)});
+            const sorted=[...allReservations].sort((a,b)=>{const statusOrder={'Pendente':1,'Confirmado':2,'Pronto':3,'Entregue':4,'Cancelado':5};return statusOrder[a.status]-statusOrder[b.status]||(b.createdAt.toMillis()-a.createdAt.toMillis())});
             const filtered=sorted.filter(res=>currentFilter==='todos'||res.status===currentFilter);
             if(filtered.length===0){reservationsContainer.innerHTML=`<div class="col-span-full text-center py-16 bg-white rounded-2xl border border-dashed"><i class="ph-bold ph-folder-simple-dashed text-6xl text-gray-300"></i><p class="mt-4 text-xl text-gray-500">Nenhuma reserva para hoje.</p></div>`}
             else{filtered.forEach(res=>{const config=statusConfig[res.status];const card=document.createElement('div');card.className='card bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-between gap-4 fade-in';const actionsHtml=config.actions.length>0?`<div class="relative"><select onchange="window.updateStatus('${res.id}', this.value)" class="w-full text-center px-4 py-2 text-sm font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition"><option value="" disabled selected>Alterar Status...</option>${config.actions.map(action=>`<option value="${action}">${action}</option>`).join('')}</select></div>`:'<p class="text-sm text-center text-gray-500 font-medium">Reserva finalizada.</p>';let itemsHtml='';if(res.quantity_chicken>0){itemsHtml+=`<div class="flex items-center gap-3"><i class="ph ph-meat text-lg text-orange-500"></i><span class="font-semibold">${res.quantity_chicken} Frango(s)</span></div>`}
@@ -150,7 +149,7 @@
             const newSkewerLimit = parseInt(e.target.limit_skewer.value);
             
             stockModal.classList.add('hidden');
-
+            
             stockData.chicken_limit = newChickenLimit;
             stockData.skewer_limit = newSkewerLimit;
             updateDashboard();
@@ -168,19 +167,32 @@
             }, { merge: true });
         });
         
-        document.getElementById('sale-form').addEventListener('submit', async (e) => { /* ... (código inalterado) ... */
+        document.getElementById('sale-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const chickenQty = parseInt(e.target.sale_chicken.value);
             const skewerQty = parseInt(e.target.sale_skewer.value);
             if (chickenQty === 0 && skewerQty === 0) return;
+            
+            saleModal.classList.add('hidden');
+            
             try {
                 await addDoc(collection(db, "reservas"), {
                     name: 'Venda Presencial', phone: '', time: '', quantity_chicken: chickenQty, quantity_skewer: skewerQty, status: 'Entregue', createdAt: serverTimestamp()
                 });
-                saleModal.classList.add('hidden');
-            } catch (error) { console.error("Erro ao registrar venda:", error); }
+
+                document.getElementById('chicken-stock-card').classList.add('flash-bg');
+                document.getElementById('skewer-stock-card').classList.add('flash-bg');
+                setTimeout(() => {
+                    document.getElementById('chicken-stock-card').classList.remove('flash-bg');
+                    document.getElementById('skewer-stock-card').classList.remove('flash-bg');
+                }, 1000);
+            } catch (error) { 
+                console.error("Erro ao registrar venda:", error); 
+                alert("Ocorreu um erro ao registrar a venda. Tente novamente.");
+            }
         });
     </script>
 </body>
 </html>
+
 
